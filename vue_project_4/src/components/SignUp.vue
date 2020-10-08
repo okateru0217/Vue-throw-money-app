@@ -10,20 +10,20 @@
         <input 
         type="text"
         placeholder="userName"
-        v-model="name">
+        v-model="$store.state.signUpData.name">
       </div><!-- item_name -->
       <div class="item_mail">
         <label for="email">メールアドレス</label>
         <input 
         type="text"
         placeholder="E-mail"
-        v-model="email">
+        v-model="$store.state.signUpData.email">
       </div><!-- item_mail -->
       <div class="item_password">
         <label for="password">パスワード</label>
         <input type="text"
         placeholder="Password"
-        v-model="password">
+        v-model="$store.state.signUpData.password">
       </div><!-- item_password -->
     </div><!-- item_input -->
       <div class="item_btn">
@@ -42,34 +42,22 @@
 </template>
 
 <script>
-import firebase from 'firebase';
-
 export default {
   data() {
     return {
-      name: '',
-      email: '',
-      password: ''
+      signUpData: {
+        name: '',
+        email: '',
+        password: ''
+      }
     }
   },
   methods: {
+    setSignUpData() {
+      this.$store.commit('setSignUpData', this.signUpData);
+    },
     signUp() {
-      const userName = this.name
-      firebase.auth().createUserWithEmailAndPassword(this.email, this.password)
-      .then(success => {
-        success.user.updateProfile({
-          displayName: userName
-        })
-        .then(() => {
-          console.log(success)
-        })
-      })
-      .catch(error => {
-        console.log(error);
-      })
-      this.name = '';
-      this.email = '';
-      this.password = '';
+      this.$store.dispatch('signUp');
     }
   }
 }
