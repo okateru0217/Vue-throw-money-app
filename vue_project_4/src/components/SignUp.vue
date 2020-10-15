@@ -28,7 +28,7 @@
     </div><!-- item_input -->
       <div class="item_btn">
       <div class="item_login-btn">
-        <button @click="signUp">新規登録</button>
+        <router-link to="/userlist" @click.native="signUp">新規登録</router-link>
       </div><!-- item_btn -->
       <div class="router_signup">
         <router-link to="/">ログインはこちら</router-link>
@@ -58,7 +58,7 @@ export default {
     },
     signUp() {
       this.$store.dispatch('signUp');
-    }
+    },
   }
 }
 </script>
@@ -94,8 +94,13 @@ export default {
   height: 100px;
 }
 
-.item_login-btn button {
-  padding: 5px 10px;
+.item_login-btn {
+  margin: 15px 0;
+}
+
+.item_login-btn a {
+  padding: 10px 10px;
+  text-decoration: none;
   font-size: 1.1rem;
   color: #18759E;
   background-color: #ffffff;
@@ -103,7 +108,7 @@ export default {
   transition: all 0.1s ease;
 }
 
-.item_login-btn button:hover {
+.item_login-btn a:hover {
   color: #ffffff;
   background-color: #18759E ;
 }

@@ -7,7 +7,8 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    signUpData: {}
+    signUpData: {},
+    userListName: ''
   },
   mutations: {
     setSignUpData(state, inputSignUpData) {
@@ -23,15 +24,13 @@ export default new Vuex.Store({
           displayName: userName
         })
         .then(() => {
-          console.log(success)
+          console.log(success);
+          this.state.userListName = success.user.displayName;
         })
       })
       .catch(error => {
         console.log(error);
       })
-      this.state.signUpData.name = '';
-      this.state.signUpData.email = '';
-      this.state.signUpData.password = '';
     }
   }
 });
