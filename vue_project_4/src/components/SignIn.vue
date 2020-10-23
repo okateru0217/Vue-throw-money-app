@@ -9,17 +9,19 @@
         <label for="email">メールアドレス</label>
         <input 
         type="text"
-        placeholder="E-mail">
+        placeholder="E-mail"
+        v-model="$store.state.signInData.email">
       </div><!-- item_mail -->
       <div class="item_password">
         <label for="password">パスワード</label>
         <input type="text"
-        placeholder="Password">
+        placeholder="Password"
+        v-model="$store.state.signInData.password">
       </div><!-- item_password -->
     </div><!-- item_input -->
       <div class="item_btn">
       <div class="item_login-btn">
-        <button>ログイン</button>
+        <button @click="signIn">ログイン</button>
       </div><!-- item_btn -->
       <div class="router_signup">
         <router-link to="/signup">新規登録はこちら</router-link>
@@ -31,6 +33,27 @@
     </div><!-- router_userlist -->
   </div><!-- item_container -->
 </template>
+
+<script>
+export default {
+  data() {
+    return {
+      signInData: {
+        email: '',
+        password: ''
+      }
+    }
+  },
+  methods: {
+    setSignInData() {
+      this.$store.commit('setSignInData', this.signInData);
+    },
+    signIn() {
+      this.$store.dispatch('signIn');
+    }
+  }
+}
+</script>
 
 <style scoped>
 .item_container {
