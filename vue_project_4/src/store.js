@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import router from './router'
 import firebase from 'firebase/app';
 import 'firebase/auth';
+import 'firebase/firebase-firestore'
 
 Vue.use(Vuex);
 
@@ -10,7 +11,8 @@ export default new Vuex.Store({
   state: {
     signUpData: {},
     signInData: {},
-    userListName: ''
+    userListName: '',
+    wallet: '',
   },
   mutations: {
     setSignUpData(state, inputSignUpData) {
@@ -38,11 +40,24 @@ export default new Vuex.Store({
       })
     },
     signIn() {
+      // サインインするための処理
       firebase.auth().signInWithEmailAndPassword(this.state.signInData.email, this.state.signInData.password)
       .then(success => {
         console.log(success)
         router.push('/userlist');
         this.state.userListName = success.user.displayName;
+        // ログインユーザーに応じて、wallet残高をCloud Firestoreから参照するための処理
+        firebase.firestore().collection('wallet')
+        .get()
+        .then(success => {
+          const walletArr = [];
+          for (let i = 0; i < success.docs.length; i++) {
+            const walletData = success.docs[i].data();
+            walletArr.push(walletData);
+          }
+          const findWallet = walletArr.find(item => item.name === this.state.userListName);
+          this.state.wallet = findWallet.wallet
+        })
       })
       .catch(error => {
         console.log(error);
