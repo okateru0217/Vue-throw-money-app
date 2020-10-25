@@ -51,12 +51,12 @@ export default new Vuex.Store({
         .get()
         .then(success => {
           const walletArr = [];
-          for (let i = 0; i < success.docs.length; i++) {
-            const walletData = success.docs[i].data();
+          success.docs.forEach((docs) => {
+            const walletData = docs.data();
             walletArr.push(walletData);
-          }
+          })
           const findWallet = walletArr.find(item => item.name === this.state.userListName);
-          this.state.wallet = findWallet.wallet
+          this.state.wallet = findWallet.wallet;
         })
       })
       .catch(error => {
