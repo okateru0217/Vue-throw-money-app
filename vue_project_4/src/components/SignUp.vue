@@ -58,7 +58,7 @@ export default {
     },
     signUp() {
       this.$store.dispatch('signUp');
-    },
+    }
   }
 }
 </script>

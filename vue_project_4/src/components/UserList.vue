@@ -6,7 +6,7 @@
         <p>{{ userListName }}さんようこそ！！</p>
       </div><!-- item_user-name -->
       <div class="item_user-option">
-        <p>残高：</p>  
+        <p>残高：{{ wallet }}</p>  
         <router-link to="/">ログアウト</router-link>
       </div><!-- item_user-option -->
     </div><!-- item_user_information -->
@@ -44,6 +44,9 @@ export default {
   computed: {
     userListName() {
       return this.$store.state.userListName;
+    },
+    wallet() {
+      return this.$store.state.wallet;
     }
   }
 }
