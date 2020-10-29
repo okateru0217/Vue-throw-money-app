@@ -7,7 +7,7 @@
       </div><!-- item_user-name -->
       <div class="item_user-option">
         <p>残高：{{ wallet }}</p>  
-        <router-link to="/">ログアウト</router-link>
+        <button @click="logOut">ログアウト</button>
       </div><!-- item_user-option -->
     </div><!-- item_user_information -->
     <div class="item_user-list_ttl">
@@ -41,6 +41,11 @@
 
 <script>
 export default {
+  methods: {
+    logOut() {
+      this.$store.dispatch('logOut');
+    }
+  },
   computed: {
     userListName() {
       return this.$store.state.userListName;
@@ -74,7 +79,7 @@ export default {
   margin-right: 20px;
 }
 
-.item_user-option a {
+.item_user-option button {
   height: 35px;
   margin-top: 10px;
   display: flex;
@@ -88,7 +93,7 @@ export default {
   transition: all 0.1s ease;
 }
 
-.item_user-option a:hover {
+.item_user-option button:hover {
   color: #ffffff;
   background-color: #18759E ;
 }

@@ -23,6 +23,7 @@ export default new Vuex.Store({
     }
   },
   actions: {
+    // サインアップ処理
     signUp() {
       const userName = this.state.signUpData.name;
       firebase.auth().createUserWithEmailAndPassword(this.state.signUpData.email, this.state.signUpData.password)
@@ -39,8 +40,8 @@ export default new Vuex.Store({
         console.log(error);
       })
     },
+    // サインイン処理
     signIn() {
-      // サインインするための処理
       firebase.auth().signInWithEmailAndPassword(this.state.signInData.email, this.state.signInData.password)
       .then(success => {
         console.log(success)
@@ -62,6 +63,16 @@ export default new Vuex.Store({
       .catch(error => {
         console.log(error);
         alert('メールアドレスまたはパスワードが間違っています');
+      })
+    },
+    // ログアウト処理
+    logOut() {
+      firebase.auth().signOut()
+      .then(() => {
+        router.push('/');
+      })
+      .catch(err => {
+        console.log(err);
       })
     }
   }
