@@ -13,6 +13,7 @@ export default new Vuex.Store({
     signInData: {},
     userListName: '',
     wallet: '',
+    otherUserData: ''
   },
   mutations: {
     setSignUpData(state, inputSignUpData) {
@@ -47,17 +48,21 @@ export default new Vuex.Store({
         console.log(success)
         router.push('/userlist');
         this.state.userListName = success.user.displayName;
-        // ログインユーザーに応じて、wallet残高をCloud Firestoreから参照するための処理
+        // UserListコンポーネントにユーザー情報を表示させるための処理
         firebase.firestore().collection('wallet')
         .get()
         .then(success => {
-          const walletArr = [];
+          const userNameWalletArr = [];
           success.docs.forEach((docs) => {
-            const walletData = docs.data();
-            walletArr.push(walletData);
+            const userNameWalletData = docs.data();
+            userNameWalletArr.push(userNameWalletData);
           })
-          const findWallet = walletArr.find(item => item.name === this.state.userListName);
+          // ログインユーザーに応じて、wallet残高をCloud Firestoreから参照するための処理
+          const findWallet = userNameWalletArr.find(item => item.name === this.state.userListName);
           this.state.wallet = findWallet.wallet;
+          // 自分以外の登録ユーザーを一覧表示させるための処理
+          const otherUser = userNameWalletArr.filter(item => item.name !== this.state.userListName);
+          this.state.otherUserData = otherUser;
         })
       })
       .catch(error => {
