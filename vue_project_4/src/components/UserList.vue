@@ -22,8 +22,8 @@
         </thead>
         <tbody>
           <tr
-          v-for="otherUserData in $store.state.otherUserData"
-          :key="otherUserData.name">
+          v-for="(otherUserData, index) in $store.state.otherUserData"
+          :key="index">
             <td>{{ otherUserData.name }}</td>
             <td><button @click="lookWallet(otherUserData)">Walletを見る</button></td>
             <td><button>送る</button></td>
