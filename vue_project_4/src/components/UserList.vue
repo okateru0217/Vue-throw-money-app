@@ -18,20 +18,32 @@
         <thead>
           <tr>
             <th>ユーザー名</th>
-            <th></th>
-            <th></th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td></td>
-            <td></td>
-            <td></td>
+          <tr
+          v-for="(otherUserData, index) in $store.state.otherUserData"
+          :key="index">
+            <td>{{ otherUserData.name }}</td>
+            <td><button @click="lookWallet(otherUserData)">Walletを見る</button></td>
+            <td><button>送る</button></td>
           </tr>
         </tbody>
       </table>
     </div><!-- item_user-list_table -->
     <small>Copyright ©2020 okazawa Inc All right reserved</small>
+    <!-- 他ユーザーの残高表示モーダルウィンドウ -->
+    <transition>
+      <div class="item_overlay" @click="noneWallet" v-show="showWallet">
+        <div class="item_other_user" v-show="showWallet">
+          <p>{{ otherUser }}さんの残高</p>
+          <p>{{ otherUserWallet }}</p>
+          <div class="item_close">
+            <button @click="noneWallet">close</button>
+          </div><!-- item_close --> 
+        </div><!-- item_other_user -->
+      </div><!-- item_overlay -->
+    </transition>
     <div class="routerlink">
       <router-link to="/">SignIn</router-link>
       <router-link to="/signup">SignUp</router-link>
@@ -41,9 +53,26 @@
 
 <script>
 export default {
+  data() {
+    return {
+      otherUser: '',
+      otherUserWallet: '',
+      showWallet: false,
+    }
+  },
   methods: {
     logOut() {
       this.$store.dispatch('logOut');
+    },
+    // モーダルウィンドウを表示させ、ログイン者以外のデータを表示
+    lookWallet(otherUserData) {
+      this.otherUser = otherUserData.name;
+      this.otherUserWallet = otherUserData.wallet;
+      this.showWallet = true;
+    },
+    // モーダルウィンドウを非表示にする
+    noneWallet() {
+      this.showWallet = false;
     }
   },
   computed: {
@@ -112,9 +141,82 @@ export default {
   text-align: left;
 }
 
+.item_user-list_table td:nth-child(2) button{
+  text-decoration: none;
+  padding: 0 10px;
+  font-size: 1.1rem;
+  color: #ffffff;
+  background-color: #18759E;
+  border: 1px solid #18759E;
+}
+
+.item_user-list_table td:nth-child(3) button{
+  text-decoration: none;
+  padding: 0 10px;
+  font-size: 1.1rem;
+  color: #ffffff;
+  background-color: #18759E;
+  border: 1px solid #18759E;
+}
+
+.item_other_user {
+  z-index: 2;
+  position: relative;
+  top: 130px;
+  width: 130px;
+  margin: 0 auto;
+  background-color: #ffffff;
+}
+
+.item_other_user button {
+  text-decoration: none;
+}
+
+.item_close {
+  text-align: right;
+  background-color: #cccccc;
+}
+
+.item_close button {
+  margin: 10px 0;
+  margin-right: 10px;
+  padding: 5px 5px;
+  text-decoration: none;
+  color: #ffffff;
+  background-color: #ff0000;
+  border: 1px solid #ff0000;
+}
+
 .small {
   display: block;
   margin-top: 50px;
+}
+
+.item_overlay {
+  z-index:1;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background-color:rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.v-enter {
+  opacity: 0;
+  transform: translateY(-5px);
+}
+.v-enter-active {
+  transition: opacity .5s ease-out, transform .5s ease-out;
+}
+.v-leave-to {
+  opacity: 0;
+}
+.v-leave-active {
+  transition: opacity .5s ease-out;
 }
 
 .routerlink {
