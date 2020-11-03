@@ -116,18 +116,31 @@ export default new Vuex.Store({
         alert('1以上の整数値を入力して下さい');
         return
       }
-      firebase.firestore().collection('wallet').doc(this.state.userListName)
-      .update({
-        // ログイン者がログイン者以外に送った金額分を差し引き、即座に反映させる
-        wallet: this.state.wallet = this.state.wallet - this.state.sendInputWallet
+      const sendUserData = firebase.firestore().collection('wallet').doc(this.state.userListName);
+      firebase.firestore().runTransaction(transaction => transaction.get(sendUserData)
+      .then(doc => {
+        // ログイン者がログイン者以外に送った金額分を差し引く
+        const subtractWallet = doc.data().wallet - this.state.sendInputWallet
+        transaction.update(sendUserData, {
+          // Walletの値を変更し、即座に反映させる
+          wallet: this.state.wallet = subtractWallet
+        });
+      }))
+      .catch(err => {
+        console.log(err);
       })
       // Walletを受け取る人を「otherUserData」から絞り込む
       const reseiveWalletUserExtract = this.state.otherUserData.filter(item => item.name === this.state.reseiveWalletUser);
-      firebase.firestore().collection('wallet').doc(this.state.reseiveWalletUser)
-      .update({
-        // ログイン者以外がログイン者から受け取った金額分を足し、即座に反映させる
-        wallet: reseiveWalletUserExtract[0].wallet = parseInt(this.state.reseiveWallet) + parseInt(this.state.sendInputWallet)
-      })
+      const reseiveUserData = firebase.firestore().collection('wallet').doc(this.state.reseiveWalletUser);
+      firebase.firestore().runTransaction(transaction => transaction.get(reseiveUserData)
+      .then(doc => {
+        // ログイン者以外がログイン者から受け取った金額分を足す
+        const addWallet = doc.data().wallet + parseInt(this.state.sendInputWallet)
+        transaction.update(reseiveUserData, {
+          // Walletの値を変更し、即座に反映させる
+          wallet: reseiveWalletUserExtract[0].wallet = addWallet
+        });
+      }))
       .catch(err => {
         console.log(err);
       })
