@@ -117,32 +117,31 @@ export default new Vuex.Store({
         return
       }
       const sendUserData = firebase.firestore().collection('wallet').doc(this.state.userListName);
-      firebase.firestore().runTransaction(transaction => transaction.get(sendUserData)
-      .then(doc => {
+      const reseiveUserData = firebase.firestore().collection('wallet').doc(this.state.reseiveWalletUser);
+      const sendUserWalletBeforeData = this.state.wallet;
+      const reseiveWalletUserExtract = this.state.otherUserData.filter(item => item.name === this.state.reseiveWalletUser);
+      firebase.firestore().runTransaction(transaction => {
+      return transaction.get(sendUserData)
+      .then(docs => {
         // ログイン者がログイン者以外に送った金額分を差し引く
-        const subtractWallet = doc.data().wallet - this.state.sendInputWallet
+        const subtractWallet = docs.data().wallet - this.state.sendInputWallet;
         transaction.update(sendUserData, {
           // Walletの値を変更し、即座に反映させる
           wallet: this.state.wallet = subtractWallet
         });
-      }))
-      .catch(err => {
-        console.log(err);
-      })
-      // Walletを受け取る人を「otherUserData」から絞り込む
-      const reseiveWalletUserExtract = this.state.otherUserData.filter(item => item.name === this.state.reseiveWalletUser);
-      const reseiveUserData = firebase.firestore().collection('wallet').doc(this.state.reseiveWalletUser);
-      firebase.firestore().runTransaction(transaction => transaction.get(reseiveUserData)
-      .then(doc => {
         // ログイン者以外がログイン者から受け取った金額分を足す
-        const addWallet = doc.data().wallet + parseInt(this.state.sendInputWallet)
+        const addWallet = this.state.reseiveWallet + parseInt(this.state.sendInputWallet);
         transaction.update(reseiveUserData, {
           // Walletの値を変更し、即座に反映させる
           wallet: reseiveWalletUserExtract[0].wallet = addWallet
         });
-      }))
-      .catch(err => {
+      })
+      }).catch(err => {
         console.log(err);
+        alert('エラーが発生したため、送金処理を中断しました');
+        // エラー発生後、UserListの残高表示をDBの残高と合わせる
+        this.state.wallet = sendUserWalletBeforeData;
+        reseiveWalletUserExtract[0].wallet = this.state.reseiveWallet;
       })
     }
   }
