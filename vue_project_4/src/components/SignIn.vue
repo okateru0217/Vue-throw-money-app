@@ -28,9 +28,6 @@
       </div><!-- router_signup -->
     </div><!-- item_btn -->
     <small>Copyright ©2020 okazawa Inc All right reserved</small>
-    <div class="router_userlist">
-      <router-link to="/userlist">UserList</router-link>
-    </div><!-- router_userlist -->
   </div><!-- item_container -->
 </template>
 

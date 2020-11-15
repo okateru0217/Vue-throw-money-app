@@ -9,11 +9,22 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    // サインアップ時の登録データ
     signUpData: {},
+    // サインイン時の登録データ
     signInData: {},
+    // 「UserList」コンポーネントで表示される、ログイン者の名前
     userListName: '',
+    // 「UserList」コンポーネントで表示される、ログイン者のWallet残高
     wallet: '',
-    otherUserData: ''
+    // 自分以外の登録ユーザーを一覧表示させるための連想配列
+    otherUserData: '',
+    // 送信するWallet金額
+    sendInputWallet: '',
+    // 「送信」ボタン押下時のウォレットを受け取るユーザー
+    reseiveWalletUser: '',
+    // 「送信」ボタン押下時のウォレットの受け取る金額
+    reseiveWallet: ''
   },
   mutations: {
     setSignUpData(state, inputSignUpData) {
@@ -21,6 +32,15 @@ export default new Vuex.Store({
     },
     setSignInData(state, inputSignInData) {
       state.signInData = {...state.signInData, ...inputSignInData}
+    },
+    // 送信するWallet金額をstateへセット
+    setSendInputWallet(state, sendInputWallet) {
+      state.sendInputWallet = sendInputWallet
+    },
+    // 「otherUserData」をコミット
+    sendWalletWindow(state, otherUserData) {
+      state.reseiveWalletUser = otherUserData.name;
+      state.reseiveWallet = otherUserData.wallet;
     }
   },
   actions: {
@@ -53,8 +73,9 @@ export default new Vuex.Store({
         .get()
         .then(success => {
           const userNameWalletArr = [];
-          success.docs.forEach((docs) => {
+          success.docs.forEach((docs, index) => {
             const userNameWalletData = docs.data();
+            userNameWalletData.id = index;
             userNameWalletArr.push(userNameWalletData);
           })
           // ログインユーザーに応じて、wallet残高をCloud Firestoreから参照するための処理
@@ -78,6 +99,49 @@ export default new Vuex.Store({
       })
       .catch(err => {
         console.log(err);
+      })
+    },
+    // 他ユーザーにWalletを送るための処理
+    sendWallet() {
+      // Wallet送金金額が所持金を超えている場合にアラートを出し、処理を中断
+      if (this.state.sendInputWallet > this.state.wallet) {
+        alert('Walletが足りません');
+        return
+      // Wallet送金欄に入力が無いまま「送信」ボタンを押下した場合にアラートを出し、処理を中断
+      } else if (this.state.sendInputWallet === '') {
+        alert('Walletを入力して下さい');
+        return
+      // 入力値が1以上の整数値でない場合アラートを出し、処理を中断
+      } else if (this.state.sendInputWallet.match(/^([1-9]\d*|0)$/) === null || this.state.sendInputWallet <= 0) {
+        alert('1以上の整数値を入力して下さい');
+        return
+      }
+      const sendUserData = firebase.firestore().collection('wallet').doc(this.state.userListName);
+      const reseiveUserData = firebase.firestore().collection('wallet').doc(this.state.reseiveWalletUser);
+      const sendUserWalletBeforeData = this.state.wallet;
+      const reseiveWalletUserExtract = this.state.otherUserData.filter(item => item.name === this.state.reseiveWalletUser);
+      firebase.firestore().runTransaction(transaction => {
+      return transaction.get(sendUserData)
+      .then(docs => {
+        // ログイン者がログイン者以外に送った金額分を差し引く
+        const subtractWallet = docs.data().wallet - this.state.sendInputWallet;
+        transaction.update(sendUserData, {
+          // Walletの値を変更し、即座に反映させる
+          wallet: this.state.wallet = subtractWallet
+        });
+        // ログイン者以外がログイン者から受け取った金額分を足す
+        const addWallet = this.state.reseiveWallet + parseInt(this.state.sendInputWallet);
+        transaction.update(reseiveUserData, {
+          // Walletの値を変更し、即座に反映させる
+          wallet: reseiveWalletUserExtract[0].wallet = addWallet
+        });
+      })
+      }).catch(err => {
+        console.log(err);
+        alert('エラーが発生したため、送金処理を中断しました');
+        // エラー発生後、UserListの残高表示をDBの残高と合わせる
+        this.state.wallet = sendUserWalletBeforeData;
+        reseiveWalletUserExtract[0].wallet = this.state.reseiveWallet;
       })
     }
   }

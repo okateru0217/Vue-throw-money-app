@@ -22,11 +22,11 @@
         </thead>
         <tbody>
           <tr
-          v-for="(otherUserData, index) in $store.state.otherUserData"
-          :key="index">
+          v-for="otherUserData in $store.state.otherUserData"
+          :key="otherUserData.id">
             <td>{{ otherUserData.name }}</td>
             <td><button @click="lookWallet(otherUserData)">Walletを見る</button></td>
-            <td><button>送る</button></td>
+            <td><button @click="sendWalletWindow(otherUserData)">送る</button></td>
           </tr>
         </tbody>
       </table>
@@ -34,9 +34,9 @@
     <small>Copyright ©2020 okazawa Inc All right reserved</small>
     <!-- 他ユーザーの残高表示モーダルウィンドウ -->
     <transition>
-      <div class="item_overlay" @click="noneWallet" v-show="showWallet">
-        <div class="item_other_user" v-show="showWallet">
-          <p>{{ otherUser }}さんの残高</p>
+      <div class="item_overlay" @click="noneWallet" v-show="showWalletDisplay">
+        <div class="item_other_user" v-show="showWalletDisplay">
+          <p>{{ otherUserName }}さんの残高</p>
           <p>{{ otherUserWallet }}</p>
           <div class="item_close">
             <button @click="noneWallet">close</button>
@@ -44,10 +44,19 @@
         </div><!-- item_other_user -->
       </div><!-- item_overlay -->
     </transition>
-    <div class="routerlink">
-      <router-link to="/">SignIn</router-link>
-      <router-link to="/signup">SignUp</router-link>
-    </div><!-- routerlink -->
+    <transition>
+      <div class="item_overlay" v-show="sendWalletDisplay">
+        <div class="item_send_wallet" v-show="sendWalletDisplay">
+          <p>あなたの残高：{{ wallet }}</p>
+          <p>送る金額</p>
+          <input type="text" v-model="$store.state.sendInputWallet">
+          <div class="item_send">
+            <button @click="noneWallet">close</button>
+            <button class="item_send_btn" @click="sendWallet">送信</button>
+          </div><!-- item_btn -->
+        </div><!-- item_send_wallet -->
+      </div><!-- item_overlay -->
+    </transition>
   </div><!-- item_container -->
 </template>
 
@@ -55,24 +64,41 @@
 export default {
   data() {
     return {
-      otherUser: '',
+      // 「Walletを見る」ボタン押下時のユーザーネーム
+      otherUserName: '',
+      // 「Walletを見る」ボタン押下時のWallet残高
       otherUserWallet: '',
-      showWallet: false,
+      // 「Walletを見る」ボタン押下時のモーダルウィンドウ出現の切り替え 
+      showWalletDisplay: false,
+      // 「送る」ボタン押下時のモーダルウィンドウ出現の切り替え
+      sendWalletDisplay: false,
     }
   },
   methods: {
+    // ログアウト処理
     logOut() {
       this.$store.dispatch('logOut');
     },
     // モーダルウィンドウを表示させ、ログイン者以外のデータを表示
     lookWallet(otherUserData) {
-      this.otherUser = otherUserData.name;
+      this.otherUserName = otherUserData.name;
       this.otherUserWallet = otherUserData.wallet;
-      this.showWallet = true;
+      this.showWalletDisplay = true;
+    },
+    // 「送る」ボタン押下時、モーダルウィンドウ出現
+    // 「otherUserData」をVuexへコミット
+    sendWalletWindow(otherUserData) {
+      this.sendWalletDisplay = true;
+      this.$store.commit('sendWalletWindow', otherUserData);
+    },
+    // 他ユーザーにWalletを送るための処理
+    sendWallet() {
+      this.$store.dispatch('sendWallet');
     },
     // モーダルウィンドウを非表示にする
     noneWallet() {
-      this.showWallet = false;
+      this.showWalletDisplay = false;
+      this.sendWalletDisplay = false;
     }
   },
   computed: {
@@ -81,6 +107,14 @@ export default {
     },
     wallet() {
       return this.$store.state.wallet;
+    },
+    sendInputWallet: {
+      get() {
+        return this.$store.state.sendInputWallet;
+      },
+      set(value) {
+        this.$store.commit('setSendInputWallet', value);
+      }
     }
   }
 }
@@ -187,6 +221,39 @@ export default {
   border: 1px solid #ff0000;
 }
 
+.item_send_wallet {
+  z-index: 2;
+  position: relative;
+  top: 130px;
+  width: 240px;
+  margin: 0 auto;
+  background-color: #ffffff;
+}
+
+.item_send_wallet input {
+  height: 20px;
+  margin-bottom: 10px;
+}
+
+.item_send {
+  display: flex;
+  justify-content: space-around;
+  background-color: #cccccc;
+}
+
+.item_send button {
+  margin: 10px 0;
+  padding: 5px 10px;
+  text-decoration: none;
+  color: #ffffff;
+  background-color: #ff0000;
+  border: 1px solid #ff0000;
+}
+
+.item_send_btn {
+  padding: 0px 12px;
+}
+
 .small {
   display: block;
   margin-top: 50px;
@@ -217,9 +284,5 @@ export default {
 }
 .v-leave-active {
   transition: opacity .5s ease-out;
-}
-
-.routerlink {
-  margin-top: 100px;
 }
 </style>
